@@ -45,8 +45,8 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'corsheaders',
-    'rest_auth',
-    'rest_auth.registration',
+    "dj_rest_auth",
+    "dj_rest_auth.registration",
     'rest_framework',
     'rest_framework.authtoken',
 ]
@@ -164,8 +164,9 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
     ),
 }
+
 CORS_ORIGIN_WHITELIST = (
-    'localhost:1234',
+    'http://localhost:1234',
 )
 
 ACCOUNT_EMAIL_REQUIRED = False
