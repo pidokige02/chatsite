@@ -9,13 +9,16 @@ class Chat extends React.Component {
 
 	initialiseChat() {
         this.waitForSocketConnection(() => {
-          WebSocketInstance.addCallbacks(this.setMessages.bind(this), this.addMessage.bind(this))
-          WebSocketInstance.fetchMessages(
-            this.props.username,
-            this.props.match.params.chatID
-          );
+            // WebSocketInstance.addCallbacks(
+            //   this.props.setMessages.bind(this),
+            //   this.props.addMessage.bind(this)
+            // );
+            WebSocketInstance.fetchMessages(
+              this.props.username,
+              this.props.match.params.chatID
+            );
         });
-		WebSocketInstance.connect(this.props.match.params.chatID);
+        WebSocketInstance.connect(this.props.match.params.chatID);
 	}
 
     constructor(props) {
@@ -38,13 +41,13 @@ class Chat extends React.Component {
         }, 100);
     }
 
-    addMessage(message) {
-        this.setState({ messages: [...this.state.messages, message]});
-    }
+    // addMessage(message) {
+    //     this.setState({ messages: [...this.state.messages, message]});
+    // }
 
-    setMessages(messages) {
-        this.setState({ messages: messages.reverse()});
-    }
+    // setMessages(messages) {
+    //     this.setState({ messages: messages.reverse()});
+    // }
 
     messageChangeHandler = (event) =>  {
         this.setState({ message: event.target.value });
@@ -78,22 +81,23 @@ class Chat extends React.Component {
         return prefix
     }
 
-    renderMessages = (messages) => {
+    renderMessages = messages => {
         const currentUser = this.props.username;
         return messages.map((message, i, arr) => (
-            <li
-                key={message.id}
-                className={message.author === currentUser ? 'sent' : 'replies'}>
-                <img src="http://emilcarlsson.se/assets/mikeross.png" />
-                <p>{message.content}
-                    <br />
-                    <small>
-                        {this.renderTimestamp(message.timestamp)}
-                    </small>
-                </p>
-            </li>
+          <li
+            key={message.id}
+            style={{ marginBottom: arr.length - 1 === i ? "300px" : "15px" }}
+            className={message.author === currentUser ? "sent" : "replies"}
+          >
+            <img src="http://emilcarlsson.se/assets/mikeross.png" />
+            <p>
+              {message.content}
+              <br />
+              <small>{this.renderTimestamp(message.timestamp)}</small>
+            </p>
+          </li>
         ));
-    }
+    };
 
     scrollToBottom = () => {
         this.messagesEnd.scrollIntoView({ behavior: "smooth" });
@@ -115,53 +119,56 @@ class Chat extends React.Component {
                   this.props.username,
                   newProps.match.params.chatID
                 );
-              });
-              WebSocketInstance.connect(newProps.match.params.chatID);
+            });
+            WebSocketInstance.connect(newProps.match.params.chatID);
         }
     }
 
     render() {
         const messages = this.state.messages;
         return (
-            <Hoc>
-                <div className="messages">
-                    <ul id="chat-log">
-                    {
-                        messages &&
-                        this.renderMessages(messages)
-                    }
-                    <div style={{ float:"left", clear: "both" }}
-                        ref={(el) => { this.messagesEnd = el; }}>
-                    </div>
-                    </ul>
-
+          <Hoc>
+            <div className="messages">
+              <ul id="chat-log">
+                {this.props.messages && this.renderMessages(this.props.messages)}
+                <div
+                  style={{ float: "left", clear: "both" }}
+                  ref={el => {
+                    this.messagesEnd = el;
+                  }}
+                />
+              </ul>
+            </div>
+            <div className="message-input">
+              <form onSubmit={this.sendMessageHandler}>
+                <div className="wrap">
+                  <input
+                    onChange={this.messageChangeHandler}
+                    value={this.state.message}
+                    required
+                    id="chat-message-input"
+                    type="text"
+                    placeholder="Write your message..."
+                  />
+                  <i className="fa fa-paperclip attachment" aria-hidden="true" />
+                  <button id="chat-message-submit" className="submit">
+                    <i className="fa fa-paper-plane" aria-hidden="true" />
+                  </button>
                 </div>
-                <div className="message-input">
-                    <form onSubmit={this.sendMessageHandler}>
-                        <div className="wrap">
-                            <input
-                                onChange={this.messageChangeHandler}
-                                value={this.state.message}
-                                required
-                                id="chat-message-input"
-                                type="text"
-                                placeholder="Write your message..." />
-                            <i className="fa fa-paperclip attachment" aria-hidden="true"></i>
-                            <button id="chat-message-submit" className="submit">
-                                <i className="fa fa-paper-plane" aria-hidden="true"></i>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </Hoc>
+              </form>
+            </div>
+          </Hoc>
         );
-    };
+    }
+
 }
 
 const mapStateToProps = state => {
     return {
-        username: state.username
-    }
-}
+      username: state.auth.username,
+      messages: state.message.messages
+    };
+};
+
 
 export default connect(mapStateToProps)(Chat);
